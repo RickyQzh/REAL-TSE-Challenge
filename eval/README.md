@@ -5,7 +5,7 @@
 Run the full REAL-T evaluation pipeline from the repo root with one command:
 
 ```bash
-cd REAL-T
+cd REAL-TSE-Challenge
 bash ./run_eval.sh --base-dir ./output/PRIMARY/BSRNN --test-set PRIMARY --cuda 0
 ```
 

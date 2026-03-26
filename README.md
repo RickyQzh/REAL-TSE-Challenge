@@ -46,7 +46,7 @@ For more details, refer to our paper: [REAL-T Paper](xxxxxxxxx)
 
 ```bash
 git clone https://github.com/REAL-TSE/REAL-T.git
-cd REAL-T
+cd REAL-TSE-Challenge
 
 # install submodules (wesep + FireRedASR2S)
 git submodule update --init --recursive
@@ -122,7 +122,7 @@ Existing files are reused when possible, so repeated runs are safe.
 The `run_tse.sh` script below demonstrates how to perform TSE inference with the [Wesep toolkit](https://github.com/wenet-e2e/wesep) using a **BSRNN model** trained on **VoxCeleb1**. You can adapt its `input/output` structure to suit your own TSE model.
 
 ```bash
-cd REAL-T
+cd REAL-TSE-Challenge
 bash -i run_tse.sh
 ```
 
@@ -148,7 +148,7 @@ This script runs TSE inference for multiple datasets using a specified model. Ea
 The recommended evaluation entrypoint is now `run_eval.sh` at the repo root. It runs the full evaluation pipeline sequentially on one `BASE_DIR`, using one CUDA device for all stages.
 
 ```bash
-cd REAL-T
+cd REAL-TSE-Challenge
 bash ./run_eval.sh --base-dir ./output/PRIMARY/BSRNN --test-set PRIMARY --cuda 0
 ```
 
