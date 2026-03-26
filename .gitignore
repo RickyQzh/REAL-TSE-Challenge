@@ -48,3 +48,5 @@ tensorboard
 
 # DNSMOS
 DNSMOS/
+
+pretrained/*
