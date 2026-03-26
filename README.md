@@ -82,21 +82,38 @@ $ export PYTHONPATH=$PWD/wesep/:$PYTHONPATH
 
 ### 2.4 Prepare Dataset and Checkpoints
 
-Evaluation requires the `REAL-T` dataset and the ASR model checkpoint `FireRedASR-AED-L` and `whisper-large-v2` from Hugging Face. The dataset is expected to be provided as a Google Drive archive, then downloaded by `pre.sh`.
+`pre.sh` is the recommended one-command preparation entrypoint. By default, it prepares the dataset and all model weights required by evaluation.
 
-To prepare everything, run:
+Run with Google Drive file id:
 
 ```bash
 REALT_DATASET_GDRIVE_FILE_ID=<google_drive_file_id> bash -i ./pre.sh
 ```
 
-You can also use a sharing URL instead of a file id:
+Or run with a Google Drive sharing URL:
 
 ```bash
 REALT_DATASET_GDRIVE_URL='https://drive.google.com/file/d/.../view?usp=sharing' bash -i ./pre.sh
 ```
 
-`pre.sh` downloads the archive, extracts it under `./datasets/REAL-T`, and then rebuilds machine-local `mapping.csv`.
+`pre.sh` supports 5 optional switches (all default to `1`):
+
+- `REALT_PREP_DOWNLOAD_DATASET`
+- `REALT_PREP_DOWNLOAD_FIRERED_ASR`
+- `REALT_PREP_DOWNLOAD_WHISPER`
+- `REALT_PREP_DOWNLOAD_FIRERED_VAD`
+- `REALT_PREP_DOWNLOAD_DNSMOS`
+
+After a default run, files are prepared at:
+
+- Dataset root: `./datasets/REAL-T`
+- Dataset mapping: `./datasets/REAL-T/mapping.csv`
+- FireRedASR-AED-L: `./FireRedASR/pretrained_models/FireRedASR-AED-L`
+- Whisper large-v2: `./whisper/pretrained_models/whisper-large-v2`
+- FireRedVAD: `./FireRedASR2S/pretrained_models/FireRedVAD/VAD`
+- DNSMOS ONNX: `./DNSMOS/sig_bak_ovr.onnx` and `./DNSMOS/model_v8.onnx`
+
+Existing files are reused when possible, so repeated runs are safe.
 
 ## 3. Inference and Evaluation
 

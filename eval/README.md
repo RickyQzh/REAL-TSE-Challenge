@@ -89,10 +89,54 @@ Current metric sources for the aggregated summary:
 
 ## Prerequisites
 
-Evaluation requires the `REAL-T` dataset and the ASR checkpoint `FireRedASR-AED-L` plus `whisper-large-v2`. To prepare the dataset and standard ASR models:
+Evaluation requires:
+
+- REAL-T dataset
+- ASR model weights: `FireRedASR-AED-L`, `whisper-large-v2`
+- Timing-VAD model weights: `FireRedVAD`
+- DNSMOS ONNX model weights
+
+### Recommended: One-command preparation via `pre.sh`
+
+`pre.sh` now supports downloading dataset + all 4 model groups in one command (all enabled by default):
 
 ```bash
+REALT_DATASET_GDRIVE_FILE_ID=<google_drive_file_id> bash -i ./pre.sh
+```
+
+If you already have a local dataset under `./datasets/REAL-T`, `pre.sh` will skip dataset download and still prepare mappings.
+
+Optional switches (all default to `1`):
+
+- `REALT_PREP_DOWNLOAD_DATASET`
+- `REALT_PREP_DOWNLOAD_FIRERED_ASR`
+- `REALT_PREP_DOWNLOAD_WHISPER`
+- `REALT_PREP_DOWNLOAD_FIRERED_VAD`
+- `REALT_PREP_DOWNLOAD_DNSMOS`
+
+Example: only download dataset + FireRedVAD
+
+```bash
+REALT_DATASET_GDRIVE_FILE_ID=<google_drive_file_id> \
+REALT_PREP_DOWNLOAD_FIRERED_ASR=0 \
+REALT_PREP_DOWNLOAD_WHISPER=0 \
+REALT_PREP_DOWNLOAD_DNSMOS=0 \
 bash -i ./pre.sh
+```
+
+### Optional: Manual downloads (separate from `pre.sh`)
+
+Use the commands below when you want to fetch one component independently.
+
+### FireRedASR-AED-L + Whisper
+
+```bash
+mkdir -p ./FireRedASR/pretrained_models ./whisper/pretrained_models
+python3 ./utils/download_asr_model.py \
+  --zh_repo_id FireRedTeam/FireRedASR-AED-L \
+  --zh_save_dir ./FireRedASR/pretrained_models \
+  --en_repo_id openai/whisper-large-v2 \
+  --en_save_dir ./whisper/pretrained_models
 ```
 
 ### FireRedVAD for Timing Eval
@@ -120,6 +164,17 @@ If your dataset was prepared from the recommended Google Drive archive via `bash
 ### DNSMOS
 
 `eval/compute_dnsmos.sh` uses `./DNSMOS` by default. If the ONNX files are missing, mode 1 auto-downloads them unless `DNSMOS_NO_DOWNLOAD=1`.
+
+Manual download option:
+
+```bash
+mkdir -p ./DNSMOS
+python3 - <<'PY'
+from huggingface_hub import hf_hub_download
+for fname in ("sig_bak_ovr.onnx", "model_v8.onnx"):
+    hf_hub_download(repo_id="Vyvo-Research/dnsmos", filename=fname, local_dir="./DNSMOS")
+PY
+```
 
 ## Script Details
 
