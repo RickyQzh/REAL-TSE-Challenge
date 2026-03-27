@@ -214,6 +214,8 @@ The checkpoints is availibale at [Google Drive](https://drive.google.com/uc?expo
 REAL-T/
 ├── pretrained/
 │ ├── spk_emb_100/
+│ │ ├── avg_model.pt
+│ │ └── config.yaml
 │ ├── spk_emb_causal_100/
 │ ├── tfmap_context_100/
 │ └── tfmap_context_causal_100/
