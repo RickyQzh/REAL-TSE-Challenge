@@ -33,10 +33,9 @@ Key features of REAL-T include:
 - **Multi-genre**: Covering diverse conversational scenarios
 - **Multi-enrollment**: Multiple enrollment utterance from different parts of the conversation
 
-To support controlled evaluation, we define two test sets:
+To support controlled evaluation, we define test sets:
 
-- **BASE**: A filtered, balanced subset for initial testing
-- **PRIMARY**: A more realistic and challenging benchmark
+- **DEVSET**: A realistic and challenging benchmark
 
 Evaluations reveal that existing TSE models suffer significant performance degradation on REAL-T, highlighting the need for more robust approaches tailored to real conversational speech.
 
@@ -108,9 +107,9 @@ This script runs TSE inference for multiple datasets using a specified model. Ea
 
 | **Variable Name** | **Description** |
 | :--- | :--- |
-| `MODEL_NAME 🚩` | Name of the TSE model used for inference (e.g., `bsrnn_vox1`). |
+| `MODEL_NAME 🚩` | Name of the TSE model used for inference (e.g., `BSRNN_EMB`). |
 | `DATASETS 🚩` | List of datasets to process (e.g., AliMeeting, AMI, CHiME6, AISHELL-4, DipCo). Fisher can also be included if needed. |
-| `TEST_SET 🚩` | Test subset to use: `PRIMARY` or `BASE`. |
+| `TEST_SET 🚩` | Test subset to use: `DEVSET` . |
 | `DEVICE 🚩` | Device on which to run inference (`cuda` for GPU, `cpu` for CPU). |
 | `BASE_META_PATH` | Base directory containing metadata CSV files for each dataset. |
 | `BASE_OUTPUT_DIR` | Directory where the separated audios will be saved. |
@@ -127,20 +126,20 @@ The recommended evaluation entrypoint is now `run_eval.sh` at the repo root. It 
 
 ```bash
 cd REAL-T
-bash ./run_eval.sh --base-dir ./output/PRIMARY/BSRNN --test-set PRIMARY --cuda 0
+bash ./run_eval.sh --base-dir ./output/DEVSET/BSRNN --test-set DEVSET --cuda 0
 ```
 
 `run_eval.sh` supports three common usages:
 
 ```bash
 # 1 2: run all evaluation sub-scripts, then summarize
-bash ./run_eval.sh --base-dir ./output/PRIMARY/BSRNN --test-set PRIMARY --cuda 0 1 2
+bash ./run_eval.sh --base-dir ./output/DEVSET/BSRNN --test-set DEVSET --cuda 0 1 2
 
 # 1: only run all evaluation sub-scripts
-bash ./run_eval.sh --base-dir ./output/PRIMARY/BSRNN --test-set PRIMARY --cuda 0 1
+bash ./run_eval.sh --base-dir ./output/DEVSET/BSRNN --test-set DEVSET --cuda 0 1
 
 # 2: only summarize existing CSV results
-bash ./run_eval.sh --base-dir ./output/PRIMARY/BSRNN --test-set PRIMARY --cuda 0 2
+bash ./run_eval.sh --base-dir ./output/DEVSET/BSRNN --test-set DEVSET --cuda 0 2
 ```
 
 If no mode is provided, the default is `1 2`.
@@ -157,7 +156,7 @@ By default, `run_eval.sh` runs:
 Optional Fisher support:
 
 ```bash
-bash ./run_eval.sh --base-dir ./output/PRIMARY/BSRNN --test-set PRIMARY --cuda 0 --include-fisher
+bash ./run_eval.sh --base-dir ./output/DEVSET/BSRNN --test-set DEVSET --cuda 0 --include-fisher
 ```
 
 Expected summary outputs under the chosen `BASE_DIR`:
@@ -177,7 +176,7 @@ Expected summary outputs under the chosen `BASE_DIR`:
 
 with grouped columns:
 
-- `TER`: `fireredasr-1/whisper`, `fireredasr-2`
+- `TER`: `fireredasr-1/whisper`
 - `SIM`: `enrol-mixture`, `enrol-tse`
 - `DNSMOS`: `SIG`, `BAK`, `OVRL`, `P808`
 - `RATIO`: `precision`, `recall`, `f1`
@@ -193,21 +192,18 @@ Detailed per-metric instructions, prerequisites, and optional visualization are 
 - Use scripts under `./eval/` only when you want to run individual evaluation sub-steps manually.
 
 ## 4. Results
+[ckpt](https://drive.google.com/file/d/1M4UqK2A2EeHmQ0pCevYqBgaYn3RvklgC/view?usp=drive_link)
 
-The table below compares the performance of several recently proposed TSE models on the simulated Libri2Mix and PRIMARY test sets. 
+We evaluate four BSRNN-based TSE models with different speaker information fusion strategies (speaker embedding vs. time-frequency featuremap interaction) and causality (causal vs. non-causal), all trained on Libri2Mix-100. The table below compares their performance on the simulated dev sets.
 
 <div align="center">
 
-| Model       | Training Data     | Libri2Mix SI-SDR (dB) | PRIMARY zh (%) | PRIMARY en (%) |
-|:-------------:|:-------------------:|:------------------------:|:----------------:|:----------------:|
-| TSELM-L     | Libri2Mix-360     | /                      | 331.73         | 192.39         |
-| USEF-TFGridnet | Libri2Mix-100  | **18.05**              | 67.98          | 87.27          |
-| **BSRNN**   | Libri2Mix-100     | 12.95                  | 81.74          | 91.20          |
-|             | Libri2Mix-360     | 16.57                  | 69.80          | 73.61          |
-|             | VoxCeleb1         | 16.50                  | **57.61**      | 69.63          |
-| **BSRNN_HR**| Libri2Mix-100     | 15.91                  | 70.03          | 78.96          |
-|             | Libri2Mix-360     | 17.99                  | 63.38          | 74.64          |
-|             | VoxCeleb1         | 16.38                  | 58.77          | **66.46**      |
+| Model        | TER (fireredasr-1/whisper) | SIM (enrol-mixture) | SIM (enrol-tse) | DNSMOS SIG | DNSMOS BAK | DNSMOS OVRL | DNSMOS P808 | RATIO P | RATIO R | RATIO F1 |
+|--------------|---------------------------|---------------------|-----------------|------------|------------|-------------|-------------|---------|---------|----------|
+| BSRNN_EMB    |                      0.770 |               0.506 |           0.501 |       2.15 |        1.90 |        1.66 |        2.82 |    0.780 |   0.946 |    0.841 |
+| BSRNN_EMB_CAUSAL |                     0.788 |               0.506 |           0.492 |       2.09 |       1.92 |        1.63 |        2.69 |   0.781 |    0.920 |    0.829 |
+| BSRNN_TFMAP  |                     0.766 |               0.506 |           0.521 |        1.90 |       1.66 |         1.50 |        2.72 |   0.776 |   0.946 |    0.838 |
+| BSRNN_TFMAP_CAUSAL |                     0.744 |               0.506 |           0.535 |       1.99 |       1.72 |        1.56 |        2.76 |   0.779 |   0.952 |    0.844 |
 
 </div>
 
