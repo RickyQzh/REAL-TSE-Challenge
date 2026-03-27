@@ -61,7 +61,7 @@ pip install -r requirements.txt
 pip install --force-reinstall --no-deps onnxruntime-gpu==1.19.2
 ```
 
-`requirements.txt` is the only supported Python dependency entrypoint for this repo. For RTX 5090 / `sm_120`, it resolves the `cu128` PyTorch wheels automatically. `wespeaker` remains the only GitHub dependency because local `wesep` imports it directly.
+`requirements.txt` is the only supported Python dependency entrypoint for this repo. For RTX 5090 / `sm_120`, it resolves the `cu128` PyTorch wheels automatically. If you encounter any issues, try using `requirements2.txt` instead. `wespeaker` remains the only GitHub dependency because local `wesep` imports it directly.
 
 All top-level scripts source `env_setup.sh` by default. That helper activates `REAL-T` and appends the local `FireRedASR` / `FireRedASR2S` / `wesep` paths automatically. If you want to use a different env name temporarily, run them with `REALT_CONDA_ENV=<your_env_name>`.
 
@@ -169,7 +169,7 @@ If no mode is provided, the default is `1 2`.
 By default, `run_eval.sh` runs:
 
 1. `TER`
-2. `TSE timing`
+2. `RATIP (TSE timing)`
 3. `speaker similarity (tse_enrol)`
 4. `speaker similarity (mixture_enrol)`
 5. `DNSMOS`
@@ -209,22 +209,33 @@ Detailed per-metric instructions, prerequisites, and optional visualization are 
 
 ## 4. Results
 
-The table below compares the performance of several recently proposed TSE models on the simulated Libri2Mix and DEV test sets. 
+We evaluate four BSRNN-based TSE models with different speaker information fusion strategies (speaker embedding vs. time-frequency featuremap interaction) and causality (causal vs. non-causal), all trained on Libri2Mix-100. The table below compares their performance on the simulated dev sets.
+
 
 <div align="center">
 
-| Model       | Training Data     | Libri2Mix SI-SDR (dB) | DEV zh (%) | DEV en (%) |
-|:-------------:|:-------------------:|:------------------------:|:----------------:|:----------------:|
-| TSELM-L     | Libri2Mix-360     | /                      | 331.73         | 192.39         |
-| USEF-TFGridnet | Libri2Mix-100  | **18.05**              | 67.98          | 87.27          |
-| **BSRNN**   | Libri2Mix-100     | 12.95                  | 81.74          | 91.20          |
-|             | Libri2Mix-360     | 16.57                  | 69.80          | 73.61          |
-|             | VoxCeleb1         | 16.50                  | **57.61**      | 69.63          |
-| **BSRNN_HR**| Libri2Mix-100     | 15.91                  | 70.03          | 78.96          |
-|             | Libri2Mix-360     | 17.99                  | 63.38          | 74.64          |
-|             | VoxCeleb1         | 16.38                  | 58.77          | **66.46**      |
+| Model        | TER (fireredasr-1/whisper) | SIM (enrol-mixture) | SIM (enrol-tse) | DNSMOS SIG | DNSMOS BAK | DNSMOS OVRL | RATIO P | RATIO R | RATIO F1 |
+|--------------|---------------------------|---------------------|-----------------|------------|------------|-------------|-------------|---------|---------|
+| BSRNN_EMB    |                      0.770 |               0.506 |           0.501 |       2.15 |        1.90 |        1.66 |    0.780 |   0.946 |    0.841 |
+| BSRNN_EMB_CAUSAL |                     0.788 |               0.506 |           0.492 |       2.09 |       1.92 |        1.63 |   0.781 |    0.920 |    0.829 |
+| BSRNN_TFMAP  |                     0.766 |               0.506 |           0.521 |        1.90 |       1.66 |         1.50 |   0.776 |   0.946 |    0.838 |
+| BSRNN_TFMAP_CAUSAL |                     0.744 |               0.506 |           0.535 |       1.99 |       1.72 |        1.56 |   0.779 |   0.952 |    0.844 |
 
 </div>
+
+
+The checkpoints is availibale at [Google Drive](https://drive.google.com/uc?export=download&id=1M4UqK2A2EeHmQ0pCevYqBgaYn3RvklgC) . The directory structure for the pretrained models in the REAL-T project is suggested to be:
+
+```
+REAL-T/
+├── pretrained/
+│ ├── spk_emb_100/
+│ │ ├── avg_model.pt
+│ │ └── config.yaml
+│ ├── spk_emb_causal_100/
+│ ├── tfmap_context_100/
+│ └── tfmap_context_causal_100/
+```
 
 ## 5. Citation
 
